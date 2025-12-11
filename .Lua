@@ -1,4 +1,4 @@
--- Rayfield風 UI Library
+-- Rayfield風 UI Library with Typewriter Effect
 -- Modern & Sleek Roblox UI Library
 
 local Library = {}
@@ -50,11 +50,21 @@ local function Tween(object, properties, duration)
     return tween
 end
 
+-- タイプライター効果
+local function TypewriterEffect(textLabel, fullText, speed)
+    textLabel.Text = ""
+    for i = 1, #fullText do
+        textLabel.Text = string.sub(fullText, 1, i)
+        task.wait(speed or 0.05)
+    end
+end
+
 -- メインライブラリ作成
 function Library:CreateWindow(config)
     config = config or {}
     local windowName = config.Name or "Rayfield UI"
     local windowTheme = config.Theme or "Dark"
+    local typewriterSpeed = config.TypewriterSpeed or 0.05
     
     -- ScreenGui作成
     local ScreenGui = Instance.new("ScreenGui")
@@ -107,18 +117,62 @@ function Library:CreateWindow(config)
     HeaderBottom.BorderSizePixel = 0
     HeaderBottom.Parent = Header
     
-    -- タイトル
+    -- タイトル（タイプライター効果付き）
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
     Title.Size = UDim2.new(1, -100, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = windowName
+    Title.Text = ""
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.TextSize = 18
     Title.Font = Enum.Font.GothamBold
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = Header
+    
+    -- タイプライターエフェクトを適用
+    task.spawn(function()
+        TypewriterEffect(Title, windowName, typewriterSpeed)
+    end)
+    
+    -- 最小化ボタン
+    local MinimizeButton = Instance.new("TextButton")
+    MinimizeButton.Name = "MinimizeButton"
+    MinimizeButton.Size = UDim2.new(0, 35, 0, 35)
+    MinimizeButton.Position = UDim2.new(1, -80, 0, 5)
+    MinimizeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
+    MinimizeButton.Text = "-"
+    MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeButton.TextSize = 24
+    MinimizeButton.Font = Enum.Font.GothamBold
+    MinimizeButton.BorderSizePixel = 0
+    MinimizeButton.Parent = Header
+    
+    local MinimizeCorner = Instance.new("UICorner")
+    MinimizeCorner.CornerRadius = UDim.new(0, 8)
+    MinimizeCorner.Parent = MinimizeButton
+    
+    local isMinimized = false
+    local originalSize = MainFrame.Size
+    
+    MinimizeButton.MouseButton1Click:Connect(function()
+        isMinimized = not isMinimized
+        if isMinimized then
+            Tween(MainFrame, {Size = UDim2.new(0, 550, 0, 45)}, 0.3)
+            MinimizeButton.Text = "+"
+        else
+            Tween(MainFrame, {Size = originalSize}, 0.3)
+            MinimizeButton.Text = "-"
+        end
+    end)
+    
+    MinimizeButton.MouseEnter:Connect(function()
+        Tween(MinimizeButton, {BackgroundColor3 = Color3.fromRGB(80, 80, 255)}, 0.2)
+    end)
+    
+    MinimizeButton.MouseLeave:Connect(function()
+        Tween(MinimizeButton, {BackgroundColor3 = Color3.fromRGB(40, 40, 45)}, 0.2)
+    end)
     
     -- 閉じるボタン
     local CloseButton = Instance.new("TextButton")
